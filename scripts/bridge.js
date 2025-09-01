@@ -1,9 +1,9 @@
 // bridge.js
 // 保存先: ~/vibe-kanban-workspace/scripts/bridge.js
 
-// 必要なモジュールを順番にインポート
-const fs = require('fs').promises;
+// 必要なモジュールを最初にすべてインポート（変数の巻き上げ問題を回避）
 const path = require('path');
+const fs = require('fs').promises;
 const { exec } = require('child_process');
 const util = require('util');
 
@@ -25,10 +25,12 @@ try {
   console.log('📝 Using environment variables directly');
 }
 
+// Express関連のモジュールをインポート
 const express = require('express');
 const axios = require('axios');
 const WebSocket = require('ws');
 
+// ユーティリティ関数を設定
 const execPromise = util.promisify(exec);
 
 // Express アプリケーションの設定
