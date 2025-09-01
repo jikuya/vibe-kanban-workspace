@@ -70,12 +70,31 @@ app.post('/claude/create-task', async (req, res) => {
       taskPayload
     );
     
-    // タスクファイルを作成
-    const taskId = vibeResponse.data.data?.id || vibeResponse.data.id || vibeResponse.data.task_id;
-    const taskData = vibeResponse.data.data || vibeResponse.data;
+    // タスクファイルを作成 - 改善されたタスクID取得ロジック
+    console.log('🔍 Raw Vibe response:', JSON.stringify(vibeResponse.data, null, 2));
+    
+    let taskId, taskData;
+    
+    // 複数の可能なレスポンス形式に対応
+    if (vibeResponse.data.data) {
+      taskData = vibeResponse.data.data;
+      taskId = taskData.id || taskData.task_id;
+    } else if (vibeResponse.data.id) {
+      taskData = vibeResponse.data;
+      taskId = vibeResponse.data.id;
+    } else if (vibeResponse.data.task_id) {
+      taskData = vibeResponse.data;
+      taskId = vibeResponse.data.task_id;
+    } else {
+      taskData = vibeResponse.data;
+      taskId = null;
+    }
+    
+    console.log('🆔 Extracted task ID:', taskId);
+    console.log('📊 Task data keys:', taskData ? Object.keys(taskData) : 'null');
     
     if (!taskId) {
-      console.error('⚠️ Task ID not found in response:', JSON.stringify(vibeResponse.data, null, 2));
+      console.error('❌ Task ID not found in response. Response structure:', JSON.stringify(vibeResponse.data, null, 2));
       throw new Error('Task ID not found in server response');
     }
     
@@ -90,18 +109,31 @@ app.post('/claude/create-task', async (req, res) => {
     
     // より詳細なエラー情報をログに出力
     if (error.response) {
-      console.error('Server response status:', error.response.status);
-      console.error('Server response data:', JSON.stringify(error.response.data, null, 2));
+      console.error('🔍 Server response status:', error.response.status);
+      console.error('🔍 Server response headers:', JSON.stringify(error.response.headers, null, 2));
+      console.error('🔍 Server response data:', JSON.stringify(error.response.data, null, 2));
+      console.error('🔍 Request config:', JSON.stringify({
+        url: error.response.config?.url,
+        method: error.response.config?.method,
+        data: error.response.config?.data
+      }, null, 2));
     } else if (error.code) {
-      console.error('Error code:', error.code);
+      console.error('🔍 Error code:', error.code);
+      console.error('🔍 Full error:', error);
+    } else {
+      console.error('🔍 Unknown error type:', error);
     }
     
     res.status(500).json({ 
       error: error.message,
       details: error.response ? {
         status: error.response.status,
-        data: error.response.data
-      } : { code: error.code }
+        data: error.response.data,
+        requestUrl: error.response.config?.url
+      } : { 
+        code: error.code,
+        type: 'unknown'
+      }
     });
   }
 });
@@ -171,6 +203,35 @@ app.get('/claude/tasks', async (req, res) => {
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ヘルスチェックエンドポイント
+app.get('/health', async (req, res) => {
+  try {
+    // Vibeサーバーの接続確認
+    const healthCheck = await axios.get(`http://localhost:${VIBE_PORT}/api/tasks?project_id=${DEFAULT_PROJECT_ID}`, {
+      timeout: 5000
+    });
+    
+    res.json({
+      status: 'healthy',
+      bridge_port: BRIDGE_PORT,
+      websocket_port: WEBSOCKET_PORT,
+      vibe_connection: healthCheck.status === 200 ? 'ok' : 'error',
+      workspace_path: WORKSPACE,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      error: error.message,
+      bridge_port: BRIDGE_PORT,
+      websocket_port: WEBSOCKET_PORT,
+      vibe_connection: 'error',
+      workspace_path: WORKSPACE,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
