@@ -6,11 +6,17 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 
-const VIBE_KANBAN_API = 'http://localhost:7842/api';
+// Bridge サーバー経由でアクセスするように変更
+const VIBE_BRIDGE_API = 'http://localhost:7843/claude';
 const WORKSPACE = process.env.VIBE_WORKSPACE || path.join(process.env.HOME, 'vibe-workspace');
 
 // デフォルトプロジェクトID（UUIDv4形式）
-const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a0b1c2d3-e4f5-6789-abcd-ef0123456789';
+const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a2695f64-0f53-43ce-a90b-e7897a59fbbc';
+
+console.log('🔧 MCP Server configuration:');
+console.log(`   - BRIDGE_API: ${VIBE_BRIDGE_API}`);
+console.log(`   - WORKSPACE: ${WORKSPACE}`);
+console.log(`   - PROJECT_ID: ${DEFAULT_PROJECT_ID}`);
 
 class VibeKanbanMCPServer {
   constructor() {
@@ -151,28 +157,27 @@ class VibeKanbanMCPServer {
 
   async createTask({ title, description, priority = 'medium', project_id = DEFAULT_PROJECT_ID }) {
     try {
-      const response = await axios.post(`${VIBE_KANBAN_API}/tasks`, {
+      console.log(`🔥 MCP createTask called with: ${title}`);
+      
+      const response = await axios.post(`${VIBE_BRIDGE_API}/create-task`, {
         title,
         description,
         priority,
-        status: 'todo',
         project_id,
-        agent: 'claude-desktop',
+        context: 'claude-desktop-mcp',
         created_at: new Date().toISOString(),
       });
 
-      // タスクファイルを作成
-      const taskId = response.data.data?.id || response.data.id || response.data.task_id;
-      const taskData = response.data.data || response.data;
+      console.log(`✅ Bridge response:`, JSON.stringify(response.data, null, 2));
+      
+      // Bridge server のレスポンス形式に対応
+      const taskData = response.data.task;
+      const taskId = taskData?.id;
       
       if (!taskId) {
-        console.error('Task ID not found in response:', JSON.stringify(response.data, null, 2));
-        throw new Error('Task ID not found in server response');
+        console.error('Task ID not found in bridge response:', JSON.stringify(response.data, null, 2));
+        throw new Error('Task ID not found in bridge server response');
       }
-      
-      const taskFile = path.join(WORKSPACE, 'tasks', `task-${taskId}.json`);
-      await fs.mkdir(path.dirname(taskFile), { recursive: true });
-      await fs.writeFile(taskFile, JSON.stringify(taskData, null, 2));
 
       return {
         content: [
@@ -196,8 +201,8 @@ class VibeKanbanMCPServer {
 
   async listTasks({ status = 'all', project_id = DEFAULT_PROJECT_ID }) {
     try {
-      const response = await axios.get(`${VIBE_KANBAN_API}/tasks?project_id=${project_id}`);
-      let tasks = response.data.data;
+      const response = await axios.get(`${VIBE_BRIDGE_API}/tasks?project_id=${project_id}`);
+      let tasks = Array.isArray(response.data) ? response.data : response.data.data || response.data;
 
       if (status !== 'all') {
         tasks = tasks.filter(task => task.status === status);
@@ -229,7 +234,7 @@ class VibeKanbanMCPServer {
 
   async updateTask({ task_id, status, project_id = DEFAULT_PROJECT_ID }) {
     try {
-      await axios.patch(`${VIBE_KANBAN_API}/tasks/${task_id}`, {
+      await axios.patch(`${VIBE_BRIDGE_API}/update-task/${task_id}`, {
         status,
         project_id,
         updated_at: new Date().toISOString(),
@@ -257,27 +262,18 @@ class VibeKanbanMCPServer {
 
   async executeTask({ task_id, project_id = DEFAULT_PROJECT_ID }) {
     try {
-      // タスク情報を取得
-      const taskResponse = await axios.get(`${VIBE_KANBAN_API}/tasks/${task_id}?project_id=${project_id}`);
-      const task = taskResponse.data;
-
-      // ステータスを更新
-      await this.updateTask({ task_id, status: 'in_progress', project_id });
-
-      // 出力ディレクトリを作成
-      const outputDir = path.join(WORKSPACE, 'outputs', `task-${task_id}`);
-      await fs.mkdir(outputDir, { recursive: true });
-
-      // タスク実行結果をファイルに保存
-      const outputFile = path.join(outputDir, 'output.md');
-      const outputContent = `# Task #${task_id} Execution\n\n## Task: ${task.title}\n\n${task.description}\n\n## Status: Executing...`;
-      await fs.writeFile(outputFile, outputContent);
+      // Bridge経由でタスクを実行
+      const response = await axios.post(`${VIBE_BRIDGE_API}/execute-task/${task_id}`, {
+        project_id,
+      });
+      
+      const result = response.data;
 
       return {
         content: [
           {
             type: 'text',
-            text: `🚀 Executing task #${task_id}: ${task.title}\nOutput will be saved to: ${outputFile}`,
+            text: `🚀 Task execution delegated to Bridge server: ${JSON.stringify(result)}`,
           },
         ],
       };

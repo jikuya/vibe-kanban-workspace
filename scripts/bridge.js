@@ -1,26 +1,42 @@
 // bridge.js
 // 保存先: ~/vibe-kanban-workspace/scripts/bridge.js
 
+// 必要なモジュールを順番にインポート
+const fs = require('fs').promises;
 const path = require('path');
+const { exec } = require('child_process');
+const util = require('util');
 
-// 環境変数を読み込み
+// 環境変数を読み込み（エラーハンドリング強化）
+let dotenvLoaded = false;
 try {
-  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+  const dotenv = require('dotenv');
+  const configPath = path.join(__dirname, '..', '.env');
+  console.log(`🔧 Loading environment from: ${configPath}`);
+  const result = dotenv.config({ path: configPath });
+  if (result.error) {
+    console.log(`⚠️ dotenv config error: ${result.error.message}`);
+  } else {
+    console.log('✅ dotenv loaded successfully');
+    dotenvLoaded = true;
+  }
 } catch (error) {
-  console.log('⚠️ dotenv not available, using environment variables directly');
+  console.log(`⚠️ dotenv module error: ${error.message}`);
+  console.log('📝 Using environment variables directly');
 }
 
 const express = require('express');
 const axios = require('axios');
 const WebSocket = require('ws');
-const fs = require('fs').promises;
-const { exec } = require('child_process');
-const util = require('util');
 
 const execPromise = util.promisify(exec);
+
+// Express アプリケーションの設定
 const app = express();
 app.use(express.json());
 
+// 設定値の初期化と検証
+console.log('🔧 Bridge configuration initialization...');
 const VIBE_PORT = 7842;
 const BRIDGE_PORT = process.env.BRIDGE_PORT || 7843;
 const WEBSOCKET_PORT = process.env.WEBSOCKET_PORT || 7844;
@@ -29,6 +45,14 @@ const WORKSPACE = process.env.HOME + '/Repositories/jikuya/vibe-workspace';
 
 // デフォルトプロジェクトID（UUIDv4形式）
 const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a0b1c2d3-e4f5-6789-abcd-ef0123456789';
+
+console.log(`🔧 Configuration loaded:`);
+console.log(`   - VIBE_PORT: ${VIBE_PORT}`);
+console.log(`   - BRIDGE_PORT: ${BRIDGE_PORT}`);
+console.log(`   - WEBSOCKET_PORT: ${WEBSOCKET_PORT}`);
+console.log(`   - WORKSPACE: ${WORKSPACE}`);
+console.log(`   - DEFAULT_PROJECT_ID: ${DEFAULT_PROJECT_ID}`);
+console.log(`   - dotenv loaded: ${dotenvLoaded}`);
 
 // WebSocketサーバー
 const wss = new WebSocket.Server({ port: WEBSOCKET_PORT });
@@ -47,6 +71,10 @@ async function executeClaudeCode(taskDescription, outputPath) {
 
 // Claude Codeからのタスク作成（ローカルAPI経由）
 app.post('/claude/create-task', async (req, res) => {
+  console.log('🔥 Incoming task creation request');
+  console.log('🔥 Request body:', JSON.stringify(req.body, null, 2));
+  console.log('🔥 Request headers:', JSON.stringify(req.headers, null, 2));
+  
   const { title, description, priority = 'medium', context, code_snippet, project_id } = req.body;
   
   try {
@@ -323,7 +351,16 @@ wss.on('connection', (ws) => {
 });
 
 app.listen(BRIDGE_PORT, () => {
-  console.log(`🌉 Vibe-Claude Bridge running on port ${BRIDGE_PORT}`);
+  console.log('🚀 ============================================');
+  console.log('🚀 VIBE-CLAUDE BRIDGE SERVER STARTED');
+  console.log('🚀 ============================================');
+  console.log(`🌉 Bridge server running on port ${BRIDGE_PORT}`);
   console.log(`🔌 WebSocket server running on port ${WEBSOCKET_PORT}`);
   console.log(`🤖 Claude Code local API expected on port 7845`);
+  console.log(`📂 Workspace: ${WORKSPACE}`);
+  console.log(`🆔 Default Project ID: ${DEFAULT_PROJECT_ID}`);
+  console.log(`🔗 Vibe server expected at: http://localhost:${VIBE_PORT}`);
+  console.log('🚀 ============================================');
+  console.log(`📊 Ready to receive requests at: http://localhost:${BRIDGE_PORT}/claude/create-task`);
+  console.log('🚀 ============================================');
 });
