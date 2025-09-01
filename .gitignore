@@ -139,3 +139,10 @@ Thumbs.db
 
 # PM2 logs
 pm2.log
+
+# Lock files - only keep one package manager
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Keep package-lock.json (npm) as the project standard

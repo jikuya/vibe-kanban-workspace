@@ -4,7 +4,11 @@
 const path = require('path');
 
 // 環境変数を読み込み
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch (error) {
+  console.log('⚠️ dotenv not available, using environment variables directly');
+}
 
 const express = require('express');
 const axios = require('axios');
@@ -67,8 +71,13 @@ app.post('/claude/create-task', async (req, res) => {
     );
     
     // タスクファイルを作成
-    const taskId = vibeResponse.data.data?.id || vibeResponse.data.id;
+    const taskId = vibeResponse.data.data?.id || vibeResponse.data.id || vibeResponse.data.task_id;
     const taskData = vibeResponse.data.data || vibeResponse.data;
+    
+    if (!taskId) {
+      console.error('⚠️ Task ID not found in response:', JSON.stringify(vibeResponse.data, null, 2));
+      throw new Error('Task ID not found in server response');
+    }
     
     const taskFile = path.join(WORKSPACE, 'tasks', `task-${taskId}.json`);
     await fs.mkdir(path.dirname(taskFile), { recursive: true });
@@ -78,7 +87,22 @@ app.post('/claude/create-task', async (req, res) => {
     console.log(`✅ Task created: #${taskId} - ${title}`);
   } catch (error) {
     console.error('❌ Error creating task:', error.message);
-    res.status(500).json({ error: error.message });
+    
+    // より詳細なエラー情報をログに出力
+    if (error.response) {
+      console.error('Server response status:', error.response.status);
+      console.error('Server response data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.code) {
+      console.error('Error code:', error.code);
+    }
+    
+    res.status(500).json({ 
+      error: error.message,
+      details: error.response ? {
+        status: error.response.status,
+        data: error.response.data
+      } : { code: error.code }
+    });
   }
 });
 

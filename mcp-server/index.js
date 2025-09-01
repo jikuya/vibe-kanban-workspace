@@ -162,8 +162,13 @@ class VibeKanbanMCPServer {
       });
 
       // タスクファイルを作成
-      const taskId = response.data.data.id;
-      const taskData = response.data.data;
+      const taskId = response.data.data?.id || response.data.id || response.data.task_id;
+      const taskData = response.data.data || response.data;
+      
+      if (!taskId) {
+        console.error('Task ID not found in response:', JSON.stringify(response.data, null, 2));
+        throw new Error('Task ID not found in server response');
+      }
       
       const taskFile = path.join(WORKSPACE, 'tasks', `task-${taskId}.json`);
       await fs.mkdir(path.dirname(taskFile), { recursive: true });
