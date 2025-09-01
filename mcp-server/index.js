@@ -10,7 +10,7 @@ const path = require('path');
 const VIBE_BRIDGE_API = 'http://localhost:7843/claude';
 const WORKSPACE = process.env.VIBE_WORKSPACE || path.join(process.env.HOME, 'vibe-workspace');
 
-// デフォルトプロジェクトID（UUIDv4形式）
+// デフォルトプロジェクトID（UUIDv4形式） - 既存の有効なプロジェクトIDを使用
 const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a2695f64-0f53-43ce-a90b-e7897a59fbbc';
 
 console.log('🔧 MCP Server configuration:');
