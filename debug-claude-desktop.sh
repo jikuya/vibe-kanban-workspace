@@ -9,7 +9,7 @@ cat "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
 # MCPサーバーのテスト
 echo "🧪 MCPサーバーのテスト:"
-cd ~/vibe-kanban-workspace/mcp-server
+cd ~/Repositories/jikuya/vibe-kanban-workspace/mcp-server
 node index.js --test
 
 # ログの確認

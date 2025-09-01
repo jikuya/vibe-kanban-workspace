@@ -21,7 +21,7 @@ const VIBE_PORT = 7842;
 const BRIDGE_PORT = process.env.BRIDGE_PORT || 7843;
 const WEBSOCKET_PORT = process.env.WEBSOCKET_PORT || 7844;
 const CLAUDE_LOCAL_API = 'http://localhost:7845';
-const WORKSPACE = process.env.HOME + '/vibe-workspace';
+const WORKSPACE = process.env.HOME + '/Repositories/jikuya/vibe-workspace';
 
 // デフォルトプロジェクトID（UUIDv4形式）
 const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a0b1c2d3-e4f5-6789-abcd-ef0123456789';

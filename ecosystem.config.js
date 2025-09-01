@@ -6,7 +6,7 @@ module.exports = {
     {
       name: 'vibe-kanban',
       script: 'vibe-kanban',
-      cwd: process.env.HOME + '/vibe-kanban-workspace',
+      cwd: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
@@ -14,7 +14,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 7842,  // 被りにくいポート
         AGENT_MODE: 'local',
-        WORKSPACE_PATH: process.env.HOME + '/vibe-workspace',
+        WORKSPACE_PATH: process.env.HOME + '/Repositories/jikuya/vibe-workspace',
         GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
         GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET
       },
@@ -32,15 +32,15 @@ module.exports = {
     //   watch: false,
     //   env: {
     //     VIBE_INTEGRATION: 'true',
-    //     WORKSPACE_PATH: process.env.HOME + '/vibe-workspace',
+    //     WORKSPACE_PATH: process.env.HOME + '/Repositories/jikuya/vibe-workspace',
     //     LOCAL_API_PORT: 7845  // Claude Code ローカルAPIポート
     //   },
-    //   error_file: process.env.HOME + '/vibe-kanban-workspace/logs/claude-err.log',
-    //   out_file: process.env.HOME + '/vibe-kanban-workspace/logs/claude-out.log'
+    //   error_file: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace/logs/claude-err.log',
+    //   out_file: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace/logs/claude-out.log'
     // },
     {
       name: 'vibe-bridge',
-      script: process.env.HOME + '/vibe-kanban-workspace/scripts/bridge.js',
+      script: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace/scripts/bridge.js',
       autorestart: true,
       watch: false,
       env: {

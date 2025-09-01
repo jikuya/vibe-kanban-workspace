@@ -20,18 +20,18 @@ cat > "$CLAUDE_CONFIG_FILE" << EOF
     "vibe-kanban": {
       "command": "node",
       "args": [
-        "/Users/$USERNAME/vibe-kanban-workspace/mcp-server/index.js"
+        "/Users/$USERNAME/Repositories/jikuya/vibe-kanban-workspace/mcp-server/index.js"
       ],
       "env": {
         "VIBE_KANBAN_PORT": "7842",
-        "VIBE_WORKSPACE": "/Users/$USERNAME/vibe-workspace"
+        "VIBE_WORKSPACE": "/Users/$USERNAME/Repositories/jikuya/vibe-workspace"
       }
     },
     "filesystem": {
       "command": "npx",
       "args": [
         "@modelcontextprotocol/server-filesystem",
-        "/Users/$USERNAME/vibe-workspace"
+        "/Users/$USERNAME/Repositories/jikuya/vibe-workspace"
       ]
     }
   }
@@ -42,7 +42,7 @@ echo "✅ Claude Desktop設定ファイルを作成しました: $CLAUDE_CONFIG_
 
 # MCPサーバーのセットアップ
 echo "📦 MCPサーバーをセットアップしています..."
-cd ~/vibe-kanban-workspace/mcp-server
+cd ~/Repositories/jikuya/vibe-kanban-workspace/mcp-server
 npm install
 
 echo "✅ セットアップが完了しました！"
