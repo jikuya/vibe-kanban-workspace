@@ -13,10 +13,10 @@ const WORKSPACE = process.env.VIBE_WORKSPACE || path.join(process.env.HOME, 'vib
 // デフォルトプロジェクトID（UUIDv4形式） - 既存の有効なプロジェクトIDを使用
 const DEFAULT_PROJECT_ID = process.env.VIBE_PROJECT_ID || 'a2695f64-0f53-43ce-a90b-e7897a59fbbc';
 
-console.log('🔧 MCP Server configuration:');
-console.log(`   - BRIDGE_API: ${VIBE_BRIDGE_API}`);
-console.log(`   - WORKSPACE: ${WORKSPACE}`);
-console.log(`   - PROJECT_ID: ${DEFAULT_PROJECT_ID}`);
+console.error('🔧 MCP Server configuration:');
+console.error(`   - BRIDGE_API: ${VIBE_BRIDGE_API}`);
+console.error(`   - WORKSPACE: ${WORKSPACE}`);
+console.error(`   - PROJECT_ID: ${DEFAULT_PROJECT_ID}`);
 
 class VibeKanbanMCPServer {
   constructor() {
@@ -157,7 +157,7 @@ class VibeKanbanMCPServer {
 
   async createTask({ title, description, priority = 'medium', project_id = DEFAULT_PROJECT_ID }) {
     try {
-      console.log(`🔥 MCP createTask called with: ${title}`);
+      console.error(`🔥 MCP createTask called with: ${title}`);
       
       const response = await axios.post(`${VIBE_BRIDGE_API}/create-task`, {
         title,
@@ -168,7 +168,7 @@ class VibeKanbanMCPServer {
         created_at: new Date().toISOString(),
       });
 
-      console.log(`✅ Bridge response:`, JSON.stringify(response.data, null, 2));
+      console.error(`✅ Bridge response:`, JSON.stringify(response.data, null, 2));
       
       // Bridge server のレスポンス形式に対応
       const taskData = response.data.task;
