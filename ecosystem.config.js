@@ -4,8 +4,8 @@
 module.exports = {
   apps: [
     {
-      name: 'vibe-kanban',
-      script: 'vibe-kanban',
+      name: 'vibe-kanban-server',
+      script: 'server.js',
       cwd: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace',
       autorestart: true,
       watch: false,
