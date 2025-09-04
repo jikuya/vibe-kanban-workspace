@@ -24,26 +24,44 @@ npm run dev
 ## Services
 
 ### Main Services
-- **vibe-kanban** (Port 7842): Main Kanban application server
+- **vibe-kanban** (Port 7842): **Rust-based** Kanban application server
 - **vibe-bridge** (Port 7843): Bridge service for Claude Desktop integration
 - **WebSocket Server** (Port 7844): Real-time communication
 
 ### Process Management
-Services are managed by PM2:
+Services are managed by PM2. **The main server now uses the Rust binary `vibe-kanban`:**
 
 ```bash
-# Start all services
+# Start all services (recommended)
+./start.sh
+
+# Stop all services
+./stop.sh
+
+# Manual PM2 commands
 pm2 start ecosystem.config.js
-
-# Check status
 pm2 list
-
-# View logs
 pm2 logs
-
-# Restart services
 pm2 restart all
 ```
+
+### Quick Start Scripts
+- `./start.sh`: Start all services with proper configuration
+- `./stop.sh`: Stop all services gracefully
+
+### Rust Binary Configuration
+The main server has been migrated from Node.js to a Rust-based implementation:
+
+- **Binary location**: `/Users/jikuya/.volta/tools/image/node/20.19.1/bin/vibe-kanban`
+- **Port**: 7842 (configured via `PORT` environment variable)
+- **PM2 configuration**: Updated in `ecosystem.config.js`
+- **Auto-startup**: PM2 configuration saved for system startup
+
+#### Benefits of Rust Implementation:
+- **Performance**: Significantly faster than Node.js version
+- **Memory efficiency**: Lower memory footprint
+- **Reliability**: Better error handling and stability
+- **Concurrency**: Native async/await with superior performance
 
 ## Claude Desktop Integration
 

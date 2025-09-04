@@ -5,14 +5,13 @@ module.exports = {
   apps: [
     {
       name: 'vibe-kanban-server',
-      script: 'server.js',
+      script: 'vibe-kanban',
       cwd: process.env.HOME + '/Repositories/jikuya/vibe-kanban-workspace',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'production',
-        PORT: 7842,  // 被りにくいポート
+        PORT: 7842,  // Rustバイナリ用ポート設定
         AGENT_MODE: 'local',
         WORKSPACE_PATH: process.env.HOME + '/Repositories/jikuya/vibe-workspace',
         GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
