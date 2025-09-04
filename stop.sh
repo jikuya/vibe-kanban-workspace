@@ -4,6 +4,18 @@
 
 set -e
 
+# Volta環境変数とPATHを設定
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+# PM2のパスを明示的に設定
+PM2_PATH="$HOME/.volta/tools/image/node/20.19.1/bin/pm2"
+
+# PM2が見つからない場合の対策
+if ! command -v pm2 &> /dev/null && [ -f "$PM2_PATH" ]; then
+    export PATH="$(dirname "$PM2_PATH"):$PATH"
+fi
+
 echo "🛑 Stopping Vibe Kanban Workspace..."
 
 # ワーキングディレクトリに移動
